@@ -21,16 +21,18 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { format } from 'date-fns';
 import { HotelOutlined } from '@mui/icons-material';
+import ListPropertyForm from './ListPropertyForm';
 
 const StyledAppBar = styled(AppBar)({
   backgroundColor: '#003580',
   color: 'white',
-  boxShadow: 'none',
+  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
   minHeight: '25px',
-  position: 'absolute',
+  position: 'fixed',
   top: 0,
   left: 0,
-  right: 0
+  right: 0,
+  zIndex: 1000
 });
 
 const StyledToolbar = styled(Toolbar)({
@@ -109,6 +111,7 @@ const FormDialog = styled(Dialog)({
 const Header = () => {
   const [openSignIn, setOpenSignIn] = useState(false);
   const [openRegister, setOpenRegister] = useState(false);
+  const [openListPropertyDialog, setOpenListPropertyDialog] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loginData, setLoginData] = useState({
@@ -127,6 +130,10 @@ const Header = () => {
   const handleCloseSignIn = () => setOpenSignIn(false);
   const handleClickOpenRegister = () => setOpenRegister(true);
   const handleCloseRegister = () => setOpenRegister(false);
+
+  const handleListPropertyClick = () => {
+    setOpenListPropertyDialog(true);
+  };
 
   const handleLoginInputChange = (e) => {
     const { name, value } = e.target;
@@ -216,7 +223,7 @@ const Header = () => {
             </LogoText>
           </LogoContainer>
           <ButtonGroup>
-            <StyledButton variant="outlined">
+            <StyledButton variant="outlined" onClick={handleListPropertyClick}>
               List Your Property
             </StyledButton>
             <StyledButton variant="outlined" onClick={handleClickOpenRegister}>
@@ -358,6 +365,11 @@ const Header = () => {
           </Button>
         </DialogActions>
       </FormDialog>
+
+      <ListPropertyForm
+        open={openListPropertyDialog}
+        onClose={() => setOpenListPropertyDialog(false)}
+      />
     </StyledAppBar>
   );
 };
