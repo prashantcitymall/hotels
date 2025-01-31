@@ -22,6 +22,8 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { format } from 'date-fns';
 import { HotelOutlined } from '@mui/icons-material';
 import ListPropertyForm from './ListPropertyForm';
+import WishlistDialog from './WishlistDialog';
+import { Favorite } from '@mui/icons-material';
 
 const StyledAppBar = styled(AppBar)({
   backgroundColor: '#003580',
@@ -101,6 +103,15 @@ const StyledButton = styled(Button)(({ variant }) => ({
   }),
 }));
 
+const WishlistButton = styled(IconButton)(({ theme }) => ({
+  color: 'white',
+  padding: '4px',
+  marginRight: '8px',
+  '&:hover': {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+}));
+
 const FormDialog = styled(Dialog)({
   '& .MuiDialog-paper': {
     width: '400px',
@@ -112,6 +123,7 @@ const Header = () => {
   const [openSignIn, setOpenSignIn] = useState(false);
   const [openRegister, setOpenRegister] = useState(false);
   const [openListPropertyDialog, setOpenListPropertyDialog] = useState(false);
+  const [openWishlistDialog, setOpenWishlistDialog] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loginData, setLoginData] = useState({
@@ -223,6 +235,12 @@ const Header = () => {
             </LogoText>
           </LogoContainer>
           <ButtonGroup>
+            <WishlistButton
+              onClick={() => setOpenWishlistDialog(true)}
+              aria-label="View Wishlist"
+            >
+              <Favorite />
+            </WishlistButton>
             <StyledButton variant="outlined" onClick={handleListPropertyClick}>
               List Your Property
             </StyledButton>
@@ -369,6 +387,11 @@ const Header = () => {
       <ListPropertyForm
         open={openListPropertyDialog}
         onClose={() => setOpenListPropertyDialog(false)}
+      />
+
+      <WishlistDialog
+        open={openWishlistDialog}
+        onClose={() => setOpenWishlistDialog(false)}
       />
     </StyledAppBar>
   );
