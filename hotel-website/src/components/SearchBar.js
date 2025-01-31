@@ -10,6 +10,9 @@ import {
   TextField,
   Typography,
   IconButton,
+  Select,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import {
   LocationOn,
@@ -17,6 +20,7 @@ import {
   CalendarMonth,
   Add,
   Remove,
+  CurrencyRupee,
 } from '@mui/icons-material';
 import { styled } from '@mui/system';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -107,6 +111,28 @@ const StyledDatePicker = styled(DatePicker)(({ theme }) => ({
   },
 }));
 
+const StyledSelect = styled(Select)(({ theme }) => ({
+  height: '45px',
+  '& .MuiSelect-select': {
+    paddingTop: '10px',
+    paddingBottom: '10px',
+  },
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(0, 53, 128, 0.2)',
+  },
+  '&:hover': {
+    backgroundColor: 'rgba(0, 53, 128, 0.04)',
+    transform: 'translateY(-1px)',
+    '& .MuiOutlinedInput-notchedOutline': {
+      borderColor: 'rgba(0, 53, 128, 0.3)',
+    },
+  },
+  '&.Mui-focused': {
+    transform: 'translateY(-1px)',
+    boxShadow: '0 4px 12px rgba(0, 53, 128, 0.1)',
+  },
+}));
+
 const SearchTitle = styled(Typography)(({ theme }) => ({
   fontSize: '42px',
   fontWeight: 700,
@@ -124,33 +150,37 @@ const SearchSubtitle = styled(Typography)(({ theme }) => ({
   textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
 }));
 
-const TravellerPopover = styled(Popover)(({ theme }) => ({
+const TravelerPopover = styled(Popover)(({ theme }) => ({
   '& .MuiPopover-paper': {
     padding: '24px',
     width: '320px',
     borderRadius: '12px',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+    marginTop: '8px',
   },
 }));
 
-const TravellerCategory = styled(Box)(({ theme }) => ({
+const CounterContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
-  justifyContent: 'space-between',
   alignItems: 'center',
-  marginBottom: '16px',
+  justifyContent: 'space-between',
+  padding: '12px 0',
+  borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
+  '&:last-child': {
+    borderBottom: 'none',
+  },
 }));
 
-const CounterBox = styled(Box)(({ theme }) => ({
+const CounterControls = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: '12px',
 }));
 
-const CounterButton = styled(IconButton)(({ theme }) => ({
-  border: '1px solid #e0e0e0',
-  borderRadius: '50%',
-  padding: '4px',
-  '&.Mui-disabled': {
-    border: '1px solid #f5f5f5',
+const CounterButton = styled(IconButton)(({ theme, disabled }) => ({
+  backgroundColor: disabled ? 'rgba(0, 0, 0, 0.05)' : 'rgba(0, 53, 128, 0.1)',
+  '&:hover': {
+    backgroundColor: disabled ? 'rgba(0, 0, 0, 0.05)' : 'rgba(0, 53, 128, 0.2)',
   },
 }));
 
@@ -175,6 +205,21 @@ const childrenOptions = [
   { value: 4, label: '4 children' },
 ];
 
+const priceRanges = [
+  { value: '0-500', label: '₹0 - ₹500' },
+  { value: '500-1000', label: '₹500 - ₹1,000' },
+  { value: '1000-2000', label: '₹1,000 - ₹2,000' },
+  { value: '2000+', label: '₹2,000+' },
+];
+
+const getTravelersText = (adults, children, infants) => {
+  const parts = [];
+  if (adults > 0) parts.push(`${adults} Adult${adults > 1 ? 's' : ''}`);
+  if (children > 0) parts.push(`${children} Child${children > 1 ? 'ren' : ''}`);
+  if (infants > 0) parts.push(`${infants} Infant${infants > 1 ? 's' : ''}`);
+  return parts.length > 0 ? parts.join(', ') : 'Add travelers';
+};
+
 const SearchBar = () => {
   const [searchData, setSearchData] = useState({
     destination: '',
@@ -183,32 +228,39 @@ const SearchBar = () => {
     adults: 1,
     children: 0,
     infants: 0,
+    priceRange: '',
   });
 
   const [showResults, setShowResults] = useState(false);
+  const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
 
-  const handleTravellerClick = (event) => {
+  const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
+    setOpen(true);
   };
 
-  const handleTravellerClose = () => {
+  const handleClose = () => {
     setAnchorEl(null);
+    setOpen(false);
   };
 
-  const handleTravellerChange = (type, operation) => {
+  const handleTravelerChange = (type, operation) => {
     const limits = {
       adults: { min: 1, max: 9 },
       children: { min: 0, max: 6 },
-      infants: { min: 0, max: 6 },
+      infants: { min: 0, max: 4 },
     };
 
     setSearchData(prev => {
-      const newValue = operation === 'add' ? prev[type] + 1 : prev[type] - 1;
-      if (newValue >= limits[type].min && newValue <= limits[type].max) {
-        return { ...prev, [type]: newValue };
-      }
-      return prev;
+      const currentValue = prev[type];
+      let newValue = operation === 'add' ? currentValue + 1 : currentValue - 1;
+      newValue = Math.min(Math.max(newValue, limits[type].min), limits[type].max);
+      
+      return {
+        ...prev,
+        [type]: newValue,
+      };
     });
   };
 
@@ -294,22 +346,22 @@ const SearchBar = () => {
               <Grid item xs={12} md={6}>
                 <StyledTextField
                   fullWidth
-                  label="Travellers"
-                  value={getTotalTravellers()}
-                  onClick={handleTravellerClick}
+                  value={getTravelersText(searchData.adults, searchData.children, searchData.infants)}
+                  onClick={(event) => handleClick(event)}
+                  placeholder="Add travelers"
                   InputProps={{
+                    readOnly: true,
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Person color="primary" sx={{ fontSize: 24 }} />
+                        <Person sx={{ color: 'rgba(0, 53, 128, 0.7)' }} />
                       </InputAdornment>
                     ),
-                    readOnly: true,
                   }}
                 />
-                <TravellerPopover
-                  open={Boolean(anchorEl)}
+                <TravelerPopover
+                  open={open}
                   anchorEl={anchorEl}
-                  onClose={handleTravellerClose}
+                  onClose={handleClose}
                   anchorOrigin={{
                     vertical: 'bottom',
                     horizontal: 'left',
@@ -319,90 +371,98 @@ const SearchBar = () => {
                     horizontal: 'left',
                   }}
                 >
-                  <TravellerCategory>
-                    <Box>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                        Adults
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Age 12+ years
-                      </Typography>
-                    </Box>
-                    <CounterBox>
-                      <CounterButton
-                        onClick={() => handleTravellerChange('adults', 'subtract')}
-                        disabled={searchData.adults <= 1}
-                        size="small"
-                      >
-                        <Remove fontSize="small" />
-                      </CounterButton>
-                      <Typography>{searchData.adults}</Typography>
-                      <CounterButton
-                        onClick={() => handleTravellerChange('adults', 'add')}
-                        disabled={searchData.adults >= 9}
-                        size="small"
-                      >
-                        <Add fontSize="small" />
-                      </CounterButton>
-                    </CounterBox>
-                  </TravellerCategory>
+                  <Box>
+                    <CounterContainer>
+                      <Box>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                          Adults
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Age 13+
+                        </Typography>
+                      </Box>
+                      <CounterControls>
+                        <CounterButton
+                          size="small"
+                          onClick={() => handleTravelerChange('adults', 'subtract')}
+                          disabled={searchData.adults <= 1}
+                        >
+                          <Remove fontSize="small" />
+                        </CounterButton>
+                        <Typography sx={{ minWidth: '24px', textAlign: 'center' }}>
+                          {searchData.adults}
+                        </Typography>
+                        <CounterButton
+                          size="small"
+                          onClick={() => handleTravelerChange('adults', 'add')}
+                          disabled={searchData.adults >= 9}
+                        >
+                          <Add fontSize="small" />
+                        </CounterButton>
+                      </CounterControls>
+                    </CounterContainer>
 
-                  <TravellerCategory>
-                    <Box>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                        Children
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Age 2-12 years
-                      </Typography>
-                    </Box>
-                    <CounterBox>
-                      <CounterButton
-                        onClick={() => handleTravellerChange('children', 'subtract')}
-                        disabled={searchData.children <= 0}
-                        size="small"
-                      >
-                        <Remove fontSize="small" />
-                      </CounterButton>
-                      <Typography>{searchData.children}</Typography>
-                      <CounterButton
-                        onClick={() => handleTravellerChange('children', 'add')}
-                        disabled={searchData.children >= 6}
-                        size="small"
-                      >
-                        <Add fontSize="small" />
-                      </CounterButton>
-                    </CounterBox>
-                  </TravellerCategory>
+                    <CounterContainer>
+                      <Box>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                          Children
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Ages 2-12
+                        </Typography>
+                      </Box>
+                      <CounterControls>
+                        <CounterButton
+                          size="small"
+                          onClick={() => handleTravelerChange('children', 'subtract')}
+                          disabled={searchData.children <= 0}
+                        >
+                          <Remove fontSize="small" />
+                        </CounterButton>
+                        <Typography sx={{ minWidth: '24px', textAlign: 'center' }}>
+                          {searchData.children}
+                        </Typography>
+                        <CounterButton
+                          size="small"
+                          onClick={() => handleTravelerChange('children', 'add')}
+                          disabled={searchData.children >= 6}
+                        >
+                          <Add fontSize="small" />
+                        </CounterButton>
+                      </CounterControls>
+                    </CounterContainer>
 
-                  <TravellerCategory>
-                    <Box>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                        Infants
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Below 2 years
-                      </Typography>
-                    </Box>
-                    <CounterBox>
-                      <CounterButton
-                        onClick={() => handleTravellerChange('infants', 'subtract')}
-                        disabled={searchData.infants <= 0}
-                        size="small"
-                      >
-                        <Remove fontSize="small" />
-                      </CounterButton>
-                      <Typography>{searchData.infants}</Typography>
-                      <CounterButton
-                        onClick={() => handleTravellerChange('infants', 'add')}
-                        disabled={searchData.infants >= 6}
-                        size="small"
-                      >
-                        <Add fontSize="small" />
-                      </CounterButton>
-                    </CounterBox>
-                  </TravellerCategory>
-                </TravellerPopover>
+                    <CounterContainer>
+                      <Box>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                          Infants
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Under 2
+                        </Typography>
+                      </Box>
+                      <CounterControls>
+                        <CounterButton
+                          size="small"
+                          onClick={() => handleTravelerChange('infants', 'subtract')}
+                          disabled={searchData.infants <= 0}
+                        >
+                          <Remove fontSize="small" />
+                        </CounterButton>
+                        <Typography sx={{ minWidth: '24px', textAlign: 'center' }}>
+                          {searchData.infants}
+                        </Typography>
+                        <CounterButton
+                          size="small"
+                          onClick={() => handleTravelerChange('infants', 'add')}
+                          disabled={searchData.infants >= 4}
+                        >
+                          <Add fontSize="small" />
+                        </CounterButton>
+                      </CounterControls>
+                    </CounterContainer>
+                  </Box>
+                </TravelerPopover>
               </Grid>
             </Grid>
 
@@ -487,6 +547,35 @@ const SearchBar = () => {
                     format="MM/dd/yyyy"
                   />
                 </LocalizationProvider>
+              </Grid>
+              <Grid item xs={12} md={2}>
+                <FormControl fullWidth>
+                  <StyledSelect
+                    value={searchData.priceRange}
+                    onChange={(e) => handleInputChange('priceRange', e.target.value)}
+                    displayEmpty
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <CurrencyRupee sx={{ color: 'rgba(0, 53, 128, 0.7)', ml: 1 }} />
+                      </InputAdornment>
+                    }
+                    renderValue={(selected) => {
+                      if (!selected) {
+                        return 'Select Price Range';
+                      }
+                      return priceRanges.find(range => range.value === selected)?.label;
+                    }}
+                  >
+                    <MenuItem value="">
+                      <em>Any Price</em>
+                    </MenuItem>
+                    {priceRanges.map((range) => (
+                      <MenuItem key={range.value} value={range.value}>
+                        {range.label}
+                      </MenuItem>
+                    ))}
+                  </StyledSelect>
+                </FormControl>
               </Grid>
               <Grid item xs={12} md={2}>
                 <StyledButton
