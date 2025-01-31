@@ -68,7 +68,7 @@ const WishlistDialog = ({ open, onClose }) => {
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                       <LocationOn sx={{ fontSize: 18, mr: 0.5, color: 'text.secondary' }} />
                       <Typography variant="body2" color="text.secondary">
-                        {hotel.location}
+                        {hotel.location} • ₹{hotel.price.toLocaleString('en-IN')}/night
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -78,7 +78,7 @@ const WishlistDialog = ({ open, onClose }) => {
                       </Typography>
                     </Box>
                     <Typography variant="h6" color="primary" sx={{ mt: 1 }}>
-                      ${hotel.price}
+                      ₹{hotel.price.toLocaleString('en-IN')}
                       <Typography component="span" variant="body2" color="text.secondary">
                         /night
                       </Typography>

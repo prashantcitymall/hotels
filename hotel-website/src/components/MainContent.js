@@ -83,7 +83,7 @@ const MainContent = () => {
       name: 'The Oberoi Amarvilas',
       location: 'Agra, India',
       image: 'https://images.unsplash.com/photo-1625244724120-1fd1d34d00f6?w=800&q=80',
-      price: 500,
+      price: 42000,
       rating: 4.8,
       reviews: 1250,
     },
@@ -92,7 +92,7 @@ const MainContent = () => {
       name: 'Taj Lake Palace',
       location: 'Udaipur, India',
       image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
-      price: 450,
+      price: 38000,
       rating: 4.9,
       reviews: 980,
     },
@@ -101,7 +101,7 @@ const MainContent = () => {
       name: 'The Leela Palace',
       location: 'New Delhi, India',
       image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80',
-      price: 380,
+      price: 35000,
       rating: 4.7,
       reviews: 850,
     },
@@ -110,7 +110,7 @@ const MainContent = () => {
       name: 'ITC Grand Bharat',
       location: 'Gurugram, India',
       image: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80',
-      price: 420,
+      price: 32000,
       rating: 4.6,
       reviews: 720,
     },
@@ -119,7 +119,7 @@ const MainContent = () => {
       name: 'Rambagh Palace',
       location: 'Jaipur, India',
       image: 'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800&q=80',
-      price: 550,
+      price: 45000,
       rating: 4.8,
       reviews: 890,
     },
@@ -128,7 +128,7 @@ const MainContent = () => {
       name: 'The St. Regis Mumbai',
       location: 'Mumbai, India',
       image: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80',
-      price: 390,
+      price: 36000,
       rating: 4.5,
       reviews: 760,
     }
@@ -206,7 +206,7 @@ const MainContent = () => {
                           </Typography>
                         </Box>
                         <Typography variant="h6" color="primary" sx={{ mt: 1 }}>
-                          ${hotel.price}
+                          ₹{hotel.price.toLocaleString('en-IN')}
                           <Typography component="span" variant="body2" color="text.secondary">
                             /night
                           </Typography>
