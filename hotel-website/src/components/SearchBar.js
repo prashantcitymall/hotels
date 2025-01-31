@@ -45,15 +45,15 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 }));
 
 const StyledButton = styled(Button)(({ theme }) => ({
-  height: '45px',
   backgroundColor: '#003580',
   color: 'white',
-  fontWeight: 600,
-  transition: 'all 0.2s ease-in-out',
+  padding: '10px 40px',
+  fontSize: '16px',
+  fontWeight: 'bold',
+  minWidth: '150px',
+  height: '48px',
   '&:hover': {
     backgroundColor: '#00224f',
-    transform: 'translateY(-1px)',
-    boxShadow: '0 4px 12px rgba(0, 53, 128, 0.2)',
   },
 }));
 
@@ -182,6 +182,13 @@ const CounterButton = styled(IconButton)(({ theme, disabled }) => ({
   '&:hover': {
     backgroundColor: disabled ? 'rgba(0, 0, 0, 0.05)' : 'rgba(0, 53, 128, 0.2)',
   },
+}));
+
+const SearchButtonContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'center',
+  width: '100%',
+  marginTop: '10px',
 }));
 
 const destinations = [
@@ -467,7 +474,7 @@ const SearchBar = () => {
             </Grid>
 
             {/* Second Row */}
-            <Grid container spacing={3}>
+            <Grid container spacing={3} justifyContent="center">
               <Grid item xs={12} md={5}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <StyledDatePicker
@@ -577,10 +584,10 @@ const SearchBar = () => {
                   </StyledSelect>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={2}>
+              <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                 <StyledButton
                   variant="contained"
-                  fullWidth
+                  sx={{ width: 'auto', px: 4 }}
                   onClick={handleSearch}
                 >
                   Search
