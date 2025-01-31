@@ -12,7 +12,9 @@ import {
   DialogActions,
   TextField,
   IconButton,
-  InputAdornment
+  InputAdornment,
+  Menu,
+  MenuItem
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
@@ -23,7 +25,9 @@ import { format } from 'date-fns';
 import { HotelOutlined } from '@mui/icons-material';
 import ListPropertyForm from './ListPropertyForm';
 import WishlistDialog from './WishlistDialog';
-import { Favorite } from '@mui/icons-material';
+import AuthDialog from './AuthDialog';
+import { Favorite, Person, AccountCircle } from '@mui/icons-material';
+import { useAuth } from '../context/AuthContext';
 
 const StyledAppBar = styled(AppBar)({
   backgroundColor: '#003580',
@@ -112,116 +116,28 @@ const WishlistButton = styled(IconButton)(({ theme }) => ({
   },
 }));
 
-const FormDialog = styled(Dialog)({
-  '& .MuiDialog-paper': {
-    width: '400px',
-    maxWidth: '90%',
-  },
-});
-
 const Header = () => {
-  const [openSignIn, setOpenSignIn] = useState(false);
-  const [openRegister, setOpenRegister] = useState(false);
-  const [openListPropertyDialog, setOpenListPropertyDialog] = useState(false);
   const [openWishlistDialog, setOpenWishlistDialog] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loginData, setLoginData] = useState({
-    phone: '',
-    password: ''
-  });
-  const [registerData, setRegisterData] = useState({
-    fullName: '',
-    dateOfBirth: null,
-    phone: '',
-    password: '',
-    confirmPassword: ''
-  });
+  const [openAuthDialog, setOpenAuthDialog] = useState(false);
+  const [openListPropertyDialog, setOpenListPropertyDialog] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const { user, logout } = useAuth();
 
-  const handleClickOpenSignIn = () => setOpenSignIn(true);
-  const handleCloseSignIn = () => setOpenSignIn(false);
-  const handleClickOpenRegister = () => setOpenRegister(true);
-  const handleCloseRegister = () => setOpenRegister(false);
+  const handleProfileMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    logout();
+    handleProfileMenuClose();
+  };
 
   const handleListPropertyClick = () => {
     setOpenListPropertyDialog(true);
-  };
-
-  const handleLoginInputChange = (e) => {
-    const { name, value } = e.target;
-    setLoginData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleRegisterInputChange = (e) => {
-    const { name, value } = e.target;
-    setRegisterData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleDateChange = (date) => {
-    setRegisterData(prev => ({
-      ...prev,
-      dateOfBirth: date
-    }));
-  };
-
-  const handleLogin = async () => {
-    try {
-      const response = await fetch('http://localhost:3001/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(loginData),
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Login successful:', data);
-        handleCloseSignIn();
-      } else {
-        console.error('Login failed');
-      }
-    } catch (error) {
-      console.error('Error during login:', error);
-    }
-  };
-
-  const handleRegister = async () => {
-    if (registerData.password !== registerData.confirmPassword) {
-      alert("Passwords don't match!");
-      return;
-    }
-
-    try {
-      const formattedData = {
-        ...registerData,
-        dateOfBirth: registerData.dateOfBirth ? format(registerData.dateOfBirth, 'yyyy-MM-dd') : null
-      };
-
-      const response = await fetch('http://localhost:3001/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formattedData),
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Registration successful:', data);
-        handleCloseRegister();
-      } else {
-        console.error('Registration failed');
-      }
-    } catch (error) {
-      console.error('Error during registration:', error);
-    }
   };
 
   return (
@@ -231,7 +147,7 @@ const Header = () => {
           <LogoContainer>
             <LogoIcon />
             <LogoText>
-              AGRA HOTELS
+              Hotels
             </LogoText>
           </LogoContainer>
           <ButtonGroup>
@@ -241,157 +157,72 @@ const Header = () => {
             >
               <Favorite />
             </WishlistButton>
+            {user ? (
+              <>
+                <IconButton
+                  color="inherit"
+                  onClick={handleProfileMenuOpen}
+                  sx={{
+                    ml: 1,
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  <AccountCircle />
+                  <Typography variant="body1" sx={{ ml: 1 }}>
+                    {user.firstName}
+                  </Typography>
+                </IconButton>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleProfileMenuClose}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                >
+                  <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                </Menu>
+              </>
+            ) : (
+              <Button
+                variant="text"
+                color="inherit"
+                startIcon={<Person />}
+                onClick={() => setOpenAuthDialog(true)}
+                sx={{
+                  ml: 1,
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                }}
+              >
+                Sign In
+              </Button>
+            )}
             <StyledButton variant="outlined" onClick={handleListPropertyClick}>
               List Your Property
-            </StyledButton>
-            <StyledButton variant="outlined" onClick={handleClickOpenRegister}>
-              Register
-            </StyledButton>
-            <StyledButton variant="contained" onClick={handleClickOpenSignIn}>
-              Sign in
             </StyledButton>
           </ButtonGroup>
         </StyledToolbar>
       </Container>
-
-      <FormDialog open={openSignIn} onClose={handleCloseSignIn}>
-        <DialogTitle sx={{ textAlign: 'center', fontSize: '24px' }}>Sign In</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
-            <TextField
-              name="phone"
-              label="Phone Number"
-              type="tel"
-              fullWidth
-              value={loginData.phone}
-              onChange={handleLoginInputChange}
-              inputProps={{
-                pattern: '[0-9]*',
-                maxLength: 10
-              }}
-              sx={{ fontSize: '18px' }}
-            />
-            <TextField
-              name="password"
-              label="Password"
-              type={showPassword ? 'text' : 'password'}
-              fullWidth
-              value={loginData.password}
-              onChange={handleLoginInputChange}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ fontSize: '18px' }}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ padding: '20px' }}>
-          <Button onClick={handleCloseSignIn} size="large">Cancel</Button>
-          <Button onClick={handleLogin} variant="contained" color="primary" size="large">
-            Sign In
-          </Button>
-        </DialogActions>
-      </FormDialog>
-
-      <FormDialog open={openRegister} onClose={handleCloseRegister}>
-        <DialogTitle sx={{ textAlign: 'center', fontSize: '24px' }}>Register</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
-            <TextField
-              name="fullName"
-              label="Full Name"
-              fullWidth
-              value={registerData.fullName}
-              onChange={handleRegisterInputChange}
-              sx={{ fontSize: '18px' }}
-            />
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                label="Date of Birth"
-                value={registerData.dateOfBirth}
-                onChange={handleDateChange}
-                renderInput={(props) => <TextField {...props} fullWidth />}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    sx: { fontSize: '18px' }
-                  }
-                }}
-              />
-            </LocalizationProvider>
-            <TextField
-              name="phone"
-              label="Phone Number"
-              type="tel"
-              fullWidth
-              value={registerData.phone}
-              onChange={handleRegisterInputChange}
-              inputProps={{
-                pattern: '[0-9]*',
-                maxLength: 10
-              }}
-              sx={{ fontSize: '18px' }}
-            />
-            <TextField
-              name="password"
-              label="Password"
-              type={showPassword ? 'text' : 'password'}
-              fullWidth
-              value={registerData.password}
-              onChange={handleRegisterInputChange}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ fontSize: '18px' }}
-            />
-            <TextField
-              name="confirmPassword"
-              label="Confirm Password"
-              type={showConfirmPassword ? 'text' : 'password'}
-              fullWidth
-              value={registerData.confirmPassword}
-              onChange={handleRegisterInputChange}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
-                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ fontSize: '18px' }}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ padding: '20px' }}>
-          <Button onClick={handleCloseRegister} size="large">Cancel</Button>
-          <Button onClick={handleRegister} variant="contained" color="primary" size="large">
-            Register
-          </Button>
-        </DialogActions>
-      </FormDialog>
-
-      <ListPropertyForm
-        open={openListPropertyDialog}
-        onClose={() => setOpenListPropertyDialog(false)}
-      />
-
       <WishlistDialog
         open={openWishlistDialog}
         onClose={() => setOpenWishlistDialog(false)}
+      />
+      <AuthDialog
+        open={openAuthDialog}
+        onClose={() => setOpenAuthDialog(false)}
+      />
+      <ListPropertyForm
+        open={openListPropertyDialog}
+        onClose={() => setOpenListPropertyDialog(false)}
       />
     </StyledAppBar>
   );
