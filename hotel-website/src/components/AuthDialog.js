@@ -12,7 +12,7 @@ import {
   Tabs,
   InputAdornment,
 } from '@mui/material';
-import { Close, Phone } from '@mui/icons-material';
+import { Close, Phone, Visibility, VisibilityOff } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { useAuth } from '../context/AuthContext';
 
@@ -48,6 +48,7 @@ const AuthDialog = ({ open, onClose }) => {
     password: '',
   });
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { login, register, loading } = useAuth();
 
   const handleTabChange = (event, newValue) => {
@@ -194,7 +195,20 @@ const AuthDialog = ({ open, onClose }) => {
               fullWidth
               label="Password"
               name="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
               value={formData.password}
               onChange={handleInputChange}
               margin="normal"
@@ -258,7 +272,20 @@ const AuthDialog = ({ open, onClose }) => {
               fullWidth
               label="Password"
               name="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
               value={formData.password}
               onChange={handleInputChange}
               margin="normal"
