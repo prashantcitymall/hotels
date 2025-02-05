@@ -26,7 +26,7 @@ import { HotelOutlined } from '@mui/icons-material';
 import ListPropertyForm from './ListPropertyForm';
 import WishlistDialog from './WishlistDialog';
 import AuthDialog from './AuthDialog';
-import { Favorite, Person, AccountCircle } from '@mui/icons-material';
+import { Favorite, Person, AccountCircle, Badge } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 
 const StyledAppBar = styled(AppBar)({
@@ -50,6 +50,31 @@ const StyledToolbar = styled(Toolbar)({
     minHeight: '25px',
   }
 });
+
+const LeftSection = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '16px'
+});
+
+const IdProofButton = styled(Button)({  
+  backgroundColor: '#1a73e8',
+  color: 'white',
+  textTransform: 'none',
+  fontSize: '13px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '6px',
+  padding: '6px 16px',
+  borderRadius: '20px',
+  fontWeight: '500',
+  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+  '&:hover': {
+    backgroundColor: '#1557b0',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+  },
+  transition: 'all 0.2s ease-in-out'
+});;
 
 const LogoContainer = styled(Box)({
   display: 'flex',
@@ -144,12 +169,35 @@ const Header = () => {
     <StyledAppBar position="static">
       <Container maxWidth="xl" sx={{ minHeight: '25px' }}>
         <StyledToolbar>
-          <LogoContainer>
-            <LogoIcon />
-            <LogoText>
-              Hotels
-            </LogoText>
-          </LogoContainer>
+          <LeftSection>
+            <LogoContainer>
+              <LogoIcon />
+              <LogoText>
+                Hotels
+              </LogoText>
+            </LogoContainer>
+            {user && (
+              <IdProofButton
+                onClick={() => {
+                  // Handle ID proof upload
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'image/*,.pdf';
+                  input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      console.log('Selected file:', file);
+                      // TODO: Implement file upload logic
+                    }
+                  };
+                  input.click();
+                }}
+              >
+                <Badge sx={{ fontSize: 20 }} />
+                Upload ID Proof
+              </IdProofButton>
+            )}
+          </LeftSection>
           <ButtonGroup>
             <WishlistButton
               onClick={() => setOpenWishlistDialog(true)}
