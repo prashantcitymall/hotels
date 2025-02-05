@@ -57,6 +57,18 @@ const LeftSection = styled(Box)({
   gap: '16px'
 });
 
+const UserName = styled(Typography)({
+  color: 'white',
+  fontSize: '14px',
+  fontWeight: '500',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '6px',
+  '& .MuiSvgIcon-root': {
+    fontSize: '18px'
+  }
+});
+
 const IdProofButton = styled(Button)({  
   backgroundColor: '#1a73e8',
   color: 'white',
@@ -148,6 +160,17 @@ const Header = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const { user, logout } = useAuth();
 
+  // Debug log to see what user data we have
+  React.useEffect(() => {
+    if (user) {
+      console.log('Header - Current user data:', {
+        firstName: user.firstName || '[empty]',
+        lastName: user.lastName || '[empty]',
+        fullName: user.fullName || '[empty]'
+      });
+    }
+  }, [user]);
+
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -177,25 +200,31 @@ const Header = () => {
               </LogoText>
             </LogoContainer>
             {user && (
-              <IdProofButton
-                onClick={() => {
-                  // Handle ID proof upload
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = 'image/*,.pdf';
-                  input.onchange = (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      console.log('Selected file:', file);
-                      // TODO: Implement file upload logic
-                    }
-                  };
-                  input.click();
-                }}
-              >
-                <Badge sx={{ fontSize: 20 }} />
-                Upload ID Proof
-              </IdProofButton>
+              <>
+                <IdProofButton
+                  onClick={() => {
+                    // Handle ID proof upload
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*,.pdf';
+                    input.onchange = (e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        console.log('Selected file:', file);
+                        // TODO: Implement file upload logic
+                      }
+                    };
+                    input.click();
+                  }}
+                >
+                  <Badge sx={{ fontSize: 20 }} />
+                  Upload ID Proof
+                </IdProofButton>
+                <UserName>
+                  <Person />
+                  Welcome, {user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'User'}
+                </UserName>
+              </>
             )}
           </LeftSection>
           <ButtonGroup>
@@ -219,7 +248,7 @@ const Header = () => {
                 >
                   <AccountCircle />
                   <Typography variant="body1" sx={{ ml: 1 }}>
-                    {user.firstName}
+                    {user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || ''}
                   </Typography>
                 </IconButton>
                 <Menu

@@ -22,7 +22,10 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      console.log('Sending login request:', credentials);
+      console.log('Login - Sending request:', {
+        phone: credentials.phone,
+        password: '***'
+      });
       
       const response = await fetch('http://localhost:3001/api/login', {
         method: 'POST',
@@ -35,75 +38,143 @@ export const AuthProvider = ({ children }) => {
         })
       });
 
+      console.log('Login - Response status:', response.status);
+
       const data = await response.json();
-      console.log('Login response:', data);
+      console.log('Login - Raw response:', {
+        ...data,
+        token: data.token ? '***' : undefined
+      });
 
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+        const errorMessage = data.error || data.message || 'Login failed';
+        console.log('Login - Error:', errorMessage);
+        throw new Error(errorMessage);
       }
 
       if (!data) {
+        console.log('Login - Error: No data received');
         throw new Error('No data received from server');
       }
 
-      // Set user data from response, handling potential undefined values
-      const userData = {
-        phone: credentials.phone,
+      // Build user data object from response
+      const finalUserData = {
+        userId: data.userId,
+        phone: data.phone || credentials.phone,
         token: data.token || '',
-        firstName: '',
-        lastName: ''
+        firstName: data.firstName || '',
+        lastName: data.lastName || '',
+        fullName: data.fullName || `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'User'
       };
 
-      // Only try to split the name if it exists
-      if (data.full_name) {
-        const nameParts = data.full_name.split(' ');
-        userData.firstName = nameParts[0] || '';
-        userData.lastName = nameParts[1] || '';
+      console.log('Login - Final user data:', {
+        ...finalUserData,
+        token: '***'
+      });
+
+      // Set user data from response
+      const userData = {
+        userId: data.userId,
+        phone: data.phone || credentials.phone,
+        token: data.token || '',
+        firstName: data.firstName || '',
+        lastName: data.lastName || '',
+        fullName: data.fullName || data.full_name || `${data.firstName || ''} ${data.lastName || ''}`.trim()
+      };
+
+      // If we still don't have a fullName, try to construct it
+      if (!userData.fullName && (userData.firstName || userData.lastName)) {
+        userData.fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim();
       }
 
+      console.log('Login - Setting user data:', {
+        ...userData,
+        token: '***',
+        firstName: userData.firstName || '[empty]',
+        lastName: userData.lastName || '[empty]',
+        fullName: userData.fullName || '[empty]'
+      });
+
+      // Save user data and return success
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
+      console.log('Login - Successfully saved user data');
       return { success: true };
     } catch (err) {
       console.error('Login error:', err);
-      return { success: false, error: err.message };
+      const errorMessage = err.message || 'An unexpected error occurred';
+      console.error('Registration error details:', errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (userData) => {
+  const register = async (registrationData) => {
     setLoading(true);
     setError(null);
     try {
+      console.log('Sending registration data:', {
+        ...registrationData,
+        password: '***' // Don't log the actual password
+      });
       const response = await fetch('http://localhost:3001/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          fullName: `${userData.firstName} ${userData.lastName}`,
+          fullName: `${registrationData.firstName} ${registrationData.lastName}`,
           dateOfBirth: new Date().toISOString().split('T')[0],
-          phone: userData.phone,
-          password: userData.password
+          phone: registrationData.phone,
+          password: registrationData.password
         })
       });
 
       const data = await response.json();
-      console.log('Register response:', data);
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
+      console.log('Register response:', {
+        ...data,
+        token: data.token ? '***' : undefined // Don't log the actual token
+      });
+      
+      if (!response.ok && data.error) {
+        throw new Error(data.error);
+      }
+      
+      // If user already exists, try to log in
+      if (data.message === 'User already exists') {
+        console.log('User already exists, attempting login...');
+        return await login({
+          phone: registrationData.phone,
+          password: registrationData.password
+        });
       }
 
-      // After successful registration, log in
-      return await login({
+      // Set user data directly from registration response
+      console.log('Setting user data after registration');
+      const newUserData = {
+        phone: data.phone || registrationData.phone,
+        token: data.token || '',
+        firstName: data.firstName || registrationData.firstName || '',
+        lastName: data.lastName || registrationData.lastName || '',
+        fullName: data.fullName || `${registrationData.firstName} ${registrationData.lastName}` || ''
+      };
+      
+      console.log('Setting user data after registration:', { ...newUserData, token: '***' });
+      setUser(newUserData);
+      localStorage.setItem('user', JSON.stringify(newUserData));
+      return { success: true };
+      
+      // Don't need to login again since we already have the user data
+      /*return await login({
         phone: userData.phone,
         password: userData.password
-      });
+      });*/
     } catch (err) {
       console.error('Registration error:', err);
-      return { success: false, error: err.message };
+      const errorMessage = err.message || 'An unexpected error occurred';
+      console.error('Registration error details:', errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
